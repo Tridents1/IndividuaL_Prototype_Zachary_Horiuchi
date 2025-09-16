@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -11,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float acceleration = 10f;
     public float deceleration = 10f;
     public float velocity = 0.8f;
+
+    public float airControl = 0.1f;
 
     [Header("Jump settings")]
     public float jumpForce = 14f;
@@ -43,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded;
     private float coyoteTimer;
     private float jumpBufferTimer;
+    private float velocityPower;
 
 
     // Start is called before the first frame update
@@ -80,12 +85,48 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetButtonDown("Jump") && rb.velocity.y > 0)
         {
-            rb.velocity = new Vector2(rb.velocity.x, velocity.y * jumpCutMultiplier);
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * jumpCutMultiplier);
         }
 
     }
+
+    void FixedUpdate()
+    {
+        float targetSpeed = horizontalInput * moveSpeed;
+        float speedDifference = targetSpeed - rb.velocity.x;
+
+        float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ?
+            (isGrounded ? acceleration : acceleration * airControl):
+            (isGrounded ? deceleration : deceleration * airControl);
+
+        float movement = Mathf.Pow(Mathf.Abs(speedDifference) * accelRate, velocityPower) * Mathf.Sign(speedDifference);
+
+        rb.AddForce(Vector2.right * movement);
+
+        if (rb.velocity.y < 0)
+        {
+            rb.gravityScale = gravityScale * fallMulltiplier;
+        }
+        if (rb.velocity.y < maxFallSpeed)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        }
+    }
     void Jump()
     {
-        
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        jumpCount--;
+        coyoteTime = 0;
+    }
+
+
+    void OnDrawGizmosSelected()
+    {
+        if(groundCheck != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        }
+
     }
 }
