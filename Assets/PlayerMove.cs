@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMove : MonoBehaviour
 {
+  
     [Header("Movement Settings")]
     public float moveSpeed = 8f;
     public float acceleration = 10f;
@@ -69,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
         {
             coyoteTimer -= Time.deltaTime;
         }
-        if (Input.GetButtonDown("Jump"))
+           if (Input.GetButtonDown("Jump"))
         {
             jumpBufferTimer = jumpBufferTime ;
         }
@@ -94,7 +95,6 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         float targetSpeed = horizontalInput * moveSpeed;
-        Debug.Log(targetSpeed);
         float speedDifference = targetSpeed - rb.velocity.x;
 
         float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ?
@@ -125,7 +125,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         jumpCount--;
-        coyoteTimer = 0;//add r
+        coyoteTimer = 0;
     }
 
 
